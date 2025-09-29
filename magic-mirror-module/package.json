@@ -1,0 +1,19 @@
+{
+  "name": "MMM-simple-note",
+  "version": "1.0.0",
+  "description": "A simple note module for MagicMirror that displays notes from an external admin server",
+  "main": "MMM-simple-note.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/MMM-simple-note"
+  },
+  "keywords": [
+    "magic mirror",
+    "module",
+    "notes",
+    "simple note",
+    "MMM"
+  ],
+  "author": "",
+  "license": "MIT"
+}
