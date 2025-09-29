@@ -17,8 +17,9 @@ RUN npx prisma generate
 # Build Next.js
 RUN npm run build
 
-# Create database directory
+# Create database directory and initialize database
 RUN mkdir -p /app/prisma
+RUN npx prisma db push
 
 EXPOSE 3000
 
