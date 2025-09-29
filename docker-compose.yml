@@ -3,7 +3,7 @@ services:
     build: ./admin-server
     container_name: mmm-note-admin
     ports:
-      - "3000:3000"
+      - "3002:3000"
     volumes:
       - note_data:/app/prisma
     environment:

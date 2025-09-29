@@ -1,67 +1,25 @@
-# Dependencies stage
-FROM node:18-alpine AS deps
-WORKDIR /app
+FROM node:18-slim
 
-# Copy package files
-COPY package.json package-lock.json* ./
-RUN npm ci --only=production
-
-# Builder stage
-FROM node:18-alpine AS builder
 WORKDIR /app
 
 # Install OpenSSL for Prisma
-RUN apk add --no-cache openssl1.1-compat
+RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 
-# Copy package files and install all dependencies
-COPY package.json package-lock.json* ./
-RUN npm ci
-
-# Copy source code
+# Copy all files
 COPY . .
+
+# Install dependencies
+RUN npm ci
 
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the application
+# Build Next.js
 RUN npm run build
 
-# Production stage
-FROM node:18-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV production
-
-# Install OpenSSL and other required dependencies for Prisma
-RUN apk add --no-cache openssl1.1-compat
-
-# Create app user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-# Copy necessary files
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-# Create public directory (Next.js may not have static files)
-RUN mkdir -p ./public
-
-# Copy Prisma files
-COPY --from=builder /app/prisma ./prisma
-COPY --from=builder /app/node_modules/.prisma ./node_modules/.prisma
-
 # Create database directory
-RUN mkdir -p /app/prisma && chown -R nextjs:nodejs /app/prisma
-
-USER nextjs
+RUN mkdir -p /app/prisma
 
 EXPOSE 3000
 
-ENV PORT 3000
-ENV HOSTNAME "0.0.0.0"
-
-# Health check
-HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-  CMD node -e "require('http').get('http://localhost:3000/api/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"
-
-CMD ["node", "server.js"]
+CMD ["npm", "start"]
